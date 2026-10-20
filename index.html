@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Hoard</title>
+  <meta name="description" content="Search and sweep your screenshot pile with open AI models that run in your browser. Nothing is uploaded." />
+  <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#151814" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Hoard home">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="var(--moss)"/><ellipse cx="24" cy="26" rx="15" ry="13" fill="var(--face)"/><ellipse cx="17.5" cy="24" rx="5.5" ry="3.6" transform="rotate(-18 17.5 24)" fill="var(--patch)"/><ellipse cx="30.5" cy="24" rx="5.5" ry="3.6" transform="rotate(18 30.5 24)" fill="var(--patch)"/><circle cx="18" cy="24" r="1.6" fill="var(--face)"/><circle cx="30" cy="24" r="1.6" fill="var(--face)"/><ellipse cx="24" cy="29.5" rx="2.4" ry="1.6" fill="var(--patch)"/><path d="M20.5 33q3.5 2.4 7 0" stroke="var(--patch)" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+      <span>Hoard</span>
+    </a>
+    <div class="top-right">
+      <button id="statusPill" class="pill" type="button" hidden><span class="dot"></span><span id="statusText"></span></button>
+      <button id="settingsBtn" class="icon-btn" type="button" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+      </button>
+    </div>
+  </header>
+  <div id="progress" class="progress" hidden><div id="progressBar"></div></div>
+
+  <main>
+    <section id="welcome" class="welcome" hidden>
+      <p class="eyebrow">For the screenshots you took so you wouldn't have to remember</p>
+      <h1>Find any screenshot by what's in it.</h1>
+      <p class="lede">Hoard reads your screenshot pile with open AI models that run inside this browser tab. Search it by what you remember, let it gather the junk, and ask it questions. Your screenshots never leave this device.</p>
+      <div class="cta">
+        <button id="pickFolder" class="btn primary" type="button">Choose your screenshots folder</button>
+        <button id="trySample" class="btn" type="button">Try a sample pile</button>
+      </div>
+      <p class="fine" id="pickNote">The first run downloads about 250 MB of models, once. After that Hoard works with Wi‑Fi off.</p>
+      <input type="file" id="filesInput" webkitdirectory multiple hidden />
+
+      <ol class="features">
+        <li>
+          <span class="num">1</span>
+          <h3>Search by memory</h3>
+          <p>"wifi password", "where did I park", "that sunset". Hoard reads every word on every screenshot and looks at the picture too.</p>
+        </li>
+        <li>
+          <span class="num">2</span>
+          <h3>Sweep, don't sort</h3>
+          <p>Duplicates, dead one-time codes, expired boarding passes and accidental screenshots, gathered into one tidy pile. Nothing is ever deleted.</p>
+        </li>
+        <li>
+          <span class="num">3</span>
+          <h3>Slow and steady</h3>
+          <p>Indexing runs quietly at sloth pace, picks up where it stopped, and catches new screenshots each time you come back.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="app" class="app" hidden>
+      <div id="reconnect" class="banner" hidden>
+        <p><strong>Check for new screenshots?</strong> Your browser needs a click before Hoard can look in <span id="reconnectName">your folder</span> again.</p>
+        <button id="reconnectBtn" class="btn primary small" type="button">Look for new ones</button>
+      </div>
+
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="search" aria-selected="true" type="button">Search</button>
+        <button role="tab" data-tab="sweep" aria-selected="false" type="button">Sweep <span id="sweepCount" class="badge" hidden></span></button>
+      </nav>
+
+      <div id="tab-search" role="tabpanel">
+        <form id="searchForm" class="search" autocomplete="off">
+          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" enterkeyhint="search" aria-label="Search your screenshots" placeholder="Search your screenshots…" />
+          <button id="askBtn" class="btn ask" type="submit" title="Ask Gemma a question about your screenshots">Ask</button>
+        </form>
+        <div id="examples" class="examples"></div>
+        <div id="answer" class="answer" hidden aria-live="polite"></div>
+        <div id="kinds" class="chips" role="group" aria-label="Filter by kind"></div>
+        <p id="resultMeta" class="meta"></p>
+        <div id="grid" class="grid"></div>
+        <p id="emptyGrid" class="empty" hidden></p>
+      </div>
+
+      <div id="tab-sweep" role="tabpanel" hidden>
+        <div class="sweep-head">
+          <h2 id="sweepTitle">Nothing to sweep yet</h2>
+          <p id="sweepLede" class="lede small"></p>
+        </div>
+        <div id="sweepGroups"></div>
+        <details id="sweptBox" class="swept" hidden>
+          <summary><span id="sweptSummary">Already swept</span></summary>
+          <p class="fine" id="sweptWhere"></p>
+          <div id="sweptGrid" class="grid small"></div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>Runs on <strong>SigLIP</strong>, <strong>gte-small</strong>, <strong>Tesseract</strong> and <strong>Gemma 3</strong>: open models, running on your device. No account, no server, no analytics.</p>
+    <p><a href="https://github.com/Eternity0207/hoard" rel="noopener">Source on GitHub</a></p>
+  </footer>
+
+  <div id="detail" class="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="drawer-scrim" data-close></div>
+    <div class="drawer-panel">
+      <button class="icon-btn close" type="button" data-close aria-label="Close">✕</button>
+      <div class="drawer-body">
+        <div class="drawer-img"><img id="detailImg" alt="" /></div>
+        <div class="drawer-info">
+          <p class="eyebrow" id="detailKind"></p>
+          <h2 id="detailTitle"></h2>
+          <p class="fine" id="detailMeta"></p>
+          <div class="drawer-actions">
+            <button id="copyText" class="btn small" type="button">Copy text</button>
+            <button id="openOriginal" class="btn small" type="button">Open original</button>
+            <button id="keepBtn" class="btn small" type="button">Keep forever</button>
+            <button id="sweepOne" class="btn small warn" type="button">Sweep</button>
+          </div>
+          <h3 class="label">Text Hoard read</h3>
+          <pre id="detailText" class="ocr"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="settings" class="settings" aria-labelledby="settingsTitle">
+    <form method="dialog" class="settings-inner">
+      <div class="settings-head">
+        <h2 id="settingsTitle">Settings</h2>
+        <button class="icon-btn" value="close" aria-label="Close">✕</button>
+      </div>
+
+      <section>
+        <h3 class="label">Indexing pace</h3>
+        <div class="seg" role="radiogroup" aria-label="Indexing pace">
+          <label><input type="radio" name="pace" value="sloth" /><span><strong>Sloth</strong><small>One at a time, with naps. Fans stay quiet.</small></span></label>
+          <label><input type="radio" name="pace" value="steady" checked /><span><strong>Steady</strong><small>One at a time, no naps.</small></span></label>
+          <label><input type="radio" name="pace" value="sprint" /><span><strong>Sprint</strong><small>Everything the laptop has.</small></span></label>
+        </div>
+        <div class="row">
+          <button id="pauseBtn" class="btn small" type="button">Pause indexing</button>
+          <span id="indexInfo" class="fine"></span>
+        </div>
+      </section>
+
+      <section>
+        <h3 class="label">Your pile</h3>
+        <p id="sourceInfo" class="fine"></p>
+        <div class="row">
+          <button id="changeFolder" class="btn small" type="button">Choose a different folder</button>
+          <button id="rescanBtn" class="btn small" type="button">Look for new screenshots</button>
+        </div>
+      </section>
+
+      <section>
+        <h3 class="label">Models</h3>
+        <ul class="models">
+          <li><div><strong>Search models</strong><small>SigLIP base + gte-small + Tesseract LSTM · ~250 MB</small></div><span id="coreState" class="state">Not loaded</span></li>
+          <li><div><strong>Ask (optional)</strong><small id="llmInfo">Gemma 3 1B on your GPU · ~790 MB</small></div><span id="llmState" class="state">Not loaded</span></li>
+        </ul>
+        <div class="bar" id="llmBarWrap" hidden><div id="llmBar"></div></div>
+        <div class="row">
+          <button id="loadLlm" class="btn small" type="button">Download Gemma for Ask</button>
+        </div>
+      </section>
+
+      <section>
+        <h3 class="label">Start over</h3>
+        <p class="fine">Forget the index (thumbnails, text and settings) on this device. Your screenshots are not touched.</p>
+        <div class="row">
+          <button id="forgetBtn" class="btn small warn" type="button">Forget everything</button>
+          <button id="clearModels" class="btn small" type="button">Delete downloaded models</button>
+        </div>
+      </section>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden><span id="toastText"></span><button id="toastAction" class="link" type="button" hidden></button></div>
+</body>
+</html>
